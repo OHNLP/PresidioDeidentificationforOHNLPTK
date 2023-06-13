@@ -1,0 +1,38 @@
+{
+  "name": "Clinical Note De-Identification",
+  "desc": "Performs Clinical Note De-Identification Tasks using the Microsoft Presidio SDK",
+  "repo": "https://github.com/OHNLP/PresidioDeidentificationforOHNLPTK",
+  "packages": [],
+  "components": [
+    {
+      "name": "Identify PII Entities In Text",
+      "entry_point": "presidio_deid",
+      "class_name": "IdentifyPIIComponentDefinition",
+      "config_def": {
+        "offline_mode": {
+          "name": "Whether models are prepackaged/should use offline mode instead of attempting to download from huggingface hub",
+          "type": "BOOLEAN"
+        },
+        "id_col": {
+          "name": "Column Containing Identifiers/Record Labels for the Text",
+          "type": "STRING"
+        },
+        "text_col": {
+          "name": "Column Containing Text to De-Identify",
+          "type": "COLUMNDEF"
+        },
+        "ner_model_path": {
+          "name": "Path to the model used for NER. (Huggingface hub reference or a relative path to a bundled model)",
+          "type": "STRING",
+          "default": "obi/deid_roberta_i2b2"
+        },
+        "acceptance_threshold": {
+          "name": "Model Confidence Threshold for Redaction",
+          "type": "DOUBLE",
+          "default": "0.35"
+        }
+      }
+    }
+  ],
+  "version": "1.0.0"
+}
