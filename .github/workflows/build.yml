@@ -20,7 +20,7 @@ jobs:
       - name: Install dependencies
         run: |
           $CONDA/bin/conda env update --file environment.yml --name base
-          $CONDA/bin/conda-pack -n base -o env-${{ matrix.os }}.tar.gz
+          $CONDA/bin/conda-pack -o env-${{ matrix.os }}.tar.gz
       - name: Upload environment archive
         uses: actions/upload-artifact@v3
         with:
@@ -47,9 +47,9 @@ jobs:
       - name: Rename environments
         shell: bash
         run: |
-          mv env-windows_latest.tar.gz env-windows.tar.gz
-          mv env-macos_latest.tar.gz env-macos.tar.gz
-          mv env-ubuntu_latest.tar.gz env-linux.tar.gz
+          mv env-windows-latest.tar.gz env-windows.tar.gz
+          mv env-macos-latest.tar.gz env-macos.tar.gz
+          mv env-ubuntu-latest.tar.gz env-linux.tar.gz
       - name: Zip Package for Final Release
         uses: montudor/action-zip@v1
         with:
