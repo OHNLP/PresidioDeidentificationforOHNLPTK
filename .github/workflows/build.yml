@@ -1,10 +1,8 @@
 name: Build and Release Module
-
 on:
   push:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+*'
-
 jobs:
   build-envs:
     name: Build portable conda env
@@ -53,7 +51,7 @@ jobs:
           mv env-macos_latest.tar.gz env-macos.tar.gz
           mv env-ubuntu_latest.tar.gz env-linux.tar.gz
       - name: Zip Package for Final Release
-      - uses: montudor/action-zip@v1
+        uses: montudor/action-zip@v1
         with:
           args: zip -qq -r PresidioDeidentificationForOHNLPTK.zip .
       - name: Create a Release
