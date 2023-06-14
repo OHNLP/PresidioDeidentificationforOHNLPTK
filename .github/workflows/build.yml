@@ -47,8 +47,8 @@ jobs:
       - name: Rename environments
         shell: bash
         run: |
-          mv env-windows-latest.tar.gz env-windows.tar.gz
-          mv env-macos-latest.tar.gz env-macos.tar.gz
+          mv env-windows-latest.tar.gz env-win32.tar.gz
+          mv env-macos-latest.tar.gz env-darwin.tar.gz
           mv env-ubuntu-latest.tar.gz env-linux.tar.gz
       - name: Zip Package for Final Release
         uses: montudor/action-zip@v1
