@@ -6,6 +6,7 @@ dependencies:
   - pip=23.1.2
   - transformers
   - conda-pack
+  - charset-normalizer=3.1.0
   - pip:
     - ohnlp-backbone-xlang-python==1.0.10
     - presidio-analyzer==2.2.33
