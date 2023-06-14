@@ -20,7 +20,7 @@ jobs:
       - name: Install dependencies
         run: |
           $CONDA/bin/conda env update --file environment.yml --name base
-          $CONDA/bin/conda-pack -o env-${{ matrix.os }}.tar.gz
+          $CONDA/bin/conda-pack --ignore-missing-files -o env-${{ matrix.os }}.tar.gz
       - name: Upload environment archive
         uses: actions/upload-artifact@v3
         with:
