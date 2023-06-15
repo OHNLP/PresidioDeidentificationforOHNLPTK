@@ -13,15 +13,19 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v2
+      - uses: conda-incubator/setup-miniconda@v2
         with:
-          python-version: 3.10.11
+          auto-activate-base: true
+          activate-environment: ""
+#      - name: Set up Python
+#        uses: actions/setup-python@v2
+#        with:
+#          python-version: 3.10.11
       - name: Install dependencies
         run: |
           conda config --set channel_priority strict
-          conda env update --file environment.yml --name base
-          conda activate base
+          conda env create --file environment.yml --name buildenv
+          conda activate buildenv
           conda-pack --ignore-missing-files -o env-${{ matrix.os }}.tar.gz
       - name: Upload environment archive
         uses: actions/upload-artifact@v3
