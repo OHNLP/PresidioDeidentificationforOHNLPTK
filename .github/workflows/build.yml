@@ -7,9 +7,8 @@ jobs:
   build-envs:
     name: Build Conda Environments
     strategy:
-      max-parallel: 1
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
+        os: [windows-latest, ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Check out Repository
@@ -47,10 +46,6 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: env-windows-latest.tar.gz
-      - name: Download macos env file
-        uses: actions/download-artifact@v3
-        with:
-          name: env-macos-latest.tar.gz
       - name: Download ubuntu env file
         uses: actions/download-artifact@v3
         with:
@@ -59,7 +54,6 @@ jobs:
         shell: bash
         run: |
           mv env-windows-latest.tar.gz env-win32.tar.gz
-          mv env-macos-latest.tar.gz env-darwin.tar.gz
           mv env-ubuntu-latest.tar.gz env-linux.tar.gz
       - name: Zip Package for Final Release
         uses: montudor/action-zip@v1
