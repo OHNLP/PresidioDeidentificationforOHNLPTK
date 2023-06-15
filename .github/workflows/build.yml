@@ -17,12 +17,19 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.10.11
-      - name: Install dependencies
+      - name: Install dependencies (Darwin/Linux)
+        if: runner.os == 'Linux' || runner.os == 'macOS'
         shell: bash
         run: |
           $CONDA/bin/conda config --set channel_priority strict
           $CONDA/bin/conda env update --file environment.yml --name base
           $CONDA/bin/conda-pack --ignore-missing-files -o env-${{ matrix.os }}.tar.gz
+      - name: Install dependencies (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          $CONDA\bin\conda config --set channel_priority strict
+          $CONDA\bin\conda env update --file environment.yml --name base
+          $CONDA\bin\conda-pack --ignore-missing-files -o env-${{ matrix.os }}.tar.gz
       - name: Upload environment archive
         uses: actions/upload-artifact@v3
         with:
