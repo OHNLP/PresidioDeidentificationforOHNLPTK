@@ -30,7 +30,7 @@ jobs:
           C:\Miniconda\condabin\conda.bat config --set channel_priority strict
           C:\Miniconda\condabin\conda.bat init powershell
           C:\Miniconda\condabin\conda.bat env update --file environment.yml --name base
-          C:\Miniconda\condabin\conda-pack.exe --ignore-missing-files -o env-${{ matrix.os }}.tar.gz
+          C:\Miniconda\condabin\conda-pack --ignore-missing-files -o env-${{ matrix.os }}.tar.gz
       - name: Upload environment archive
         uses: actions/upload-artifact@v3
         with:
