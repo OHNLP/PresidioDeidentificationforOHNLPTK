@@ -88,8 +88,8 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./Backbone.zip
-          asset_name: Backbone.zip
+          asset_path: ./PresidioDeidentificationForOHNLPTK.zip
+          asset_name: PresidioDeidentificationForOHNLPTK.zip
           asset_content_type: application/zip
 
 
