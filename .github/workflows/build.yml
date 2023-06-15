@@ -13,20 +13,23 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
-      - uses: conda-incubator/setup-miniconda@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
         with:
-          auto-activate-base: true
-          activate-environment: ""
-#      - name: Set up Python
-#        uses: actions/setup-python@v2
-#        with:
-#          python-version: 3.10.11
-      - name: Install dependencies
+          python-version: 3.10.11
+      - name: Install dependencies (Darwin/Linux)
+        if: runner.os == 'Linux' || runner.os == 'macOS'
+        shell: bash
         run: |
-          conda config --set channel_priority strict
-          conda env create --file environment.yml --name buildenv
-          conda activate buildenv
-          conda-pack --ignore-missing-files -o env-${{ matrix.os }}.tar.gz
+          $CONDA/bin/conda config --set channel_priority strict
+          $CONDA/bin/conda env update --file environment.yml --name base
+          $CONDA/bin/conda-pack --ignore-missing-files -o env-${{ matrix.os }}.tar.gz
+      - name: Install dependencies (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          C:\Miniconda\bin\conda config --set channel_priority strict
+          C:\Miniconda\bin\conda env update --file environment.yml --name base
+          C:\Miniconda\bin\conda-pack --ignore-missing-files -o env-${{ matrix.os }}.tar.gz
       - name: Upload environment archive
         uses: actions/upload-artifact@v3
         with:
