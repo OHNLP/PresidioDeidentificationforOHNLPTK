@@ -45,11 +45,11 @@ jobs:
       - name: Download windows env file
         uses: actions/download-artifact@v3
         with:
-          name: env-windows-latest.tar.gz
+          name: windows-latest-env
       - name: Download ubuntu env file
         uses: actions/download-artifact@v3
         with:
-          name: env-ubuntu-latest.tar.gz
+          name: ubuntu-latest-env
       - name: Rename environments
         shell: bash
         run: |
