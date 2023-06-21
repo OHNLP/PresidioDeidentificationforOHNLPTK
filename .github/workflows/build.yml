@@ -23,7 +23,7 @@ jobs:
         run: |
           $CONDA/bin/conda config --set channel_priority strict
           $CONDA/bin/conda env update --file environment.yml --name base
-          python -m spacy.download en_core_web_lg
+          $CONDA/python -m spacy.download en_core_web_lg
           $CONDA/bin/conda-pack --ignore-missing-files -o env-${{ matrix.os }}.tar.gz
       - name: Create and Package Conda Environment (Windows)
         if: runner.os == 'Windows'
@@ -31,7 +31,7 @@ jobs:
           C:\Miniconda\condabin\conda.bat config --set channel_priority strict
           C:\Miniconda\condabin\conda.bat init powershell
           C:\Miniconda\condabin\conda.bat env update --file environment.yml --name base
-          python -m spacy.download en_core_web_lg
+          C:\Miniconda\python.exe -m spacy.download en_core_web_lg
           C:\Miniconda\Scripts\conda-pack.exe -p C:\Miniconda --ignore-missing-files -o env-${{ matrix.os }}.tar.gz
       - name: Upload environment archive
         uses: actions/upload-artifact@v3
