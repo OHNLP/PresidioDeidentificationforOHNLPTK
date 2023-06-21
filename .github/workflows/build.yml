@@ -117,7 +117,7 @@ jobs:
           asset_name: PresidioDeidentificationForOHNLPTK.zip
           asset_content_type: application/zip
       - name: Upload Release Asset (Standalone)
-        id: upload-release-asset
+        id: upload-release-asset-standalone
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ github.token }}
