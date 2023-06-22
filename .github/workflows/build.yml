@@ -9,17 +9,13 @@ jobs:
     strategy:
       matrix:
         os: [
-#          windows-latest,
+          windows-latest,
           ubuntu-latest
         ]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Check out Repository
         uses: actions/checkout@v3
-#      - name: Set up Python
-#        uses: actions/setup-python@v4
-#        with:
-#          python-version: 3.10.11
       - name: Setup Miniconda
         uses: conda-incubator/setup-miniconda@v2.2.0
         with:
@@ -34,14 +30,15 @@ jobs:
           conda activate build_env
           python -m spacy download en_core_web_lg
           conda-pack --ignore-missing-files -o env-${{ matrix.os }}.tar.gz
-#      - name: Create and Package Conda Environment (Windows)
-#        if: runner.os == 'Windows'
-#        run: |
-#          C:\Miniconda\condabin\conda.bat config --set channel_priority strict
-#          C:\Miniconda\condabin\conda.bat init powershell
-#          C:\Miniconda\condabin\conda.bat env update --file environment.yml --name base
-#          C:\Miniconda\python.exe -m spacy.download en_core_web_lg
-#          C:\Miniconda\Scripts\conda-pack.exe -p C:\Miniconda --ignore-missing-files -o env-${{ matrix.os }}.tar.gz
+      - name: Create and Package Conda Environment (Windows)
+        if: runner.os == 'Windows'
+        shell: cmd /C call {0}
+        run: |
+          conda config --set channel_priority strict
+          conda env create -f environment.yml --name build_env
+          conda activate build_env
+          python -m spacy.download en_core_web_lg
+          conda-pack --ignore-missing-files -o env-${{ matrix.os }}.tar.gz
       - name: Upload environment archive
         uses: actions/upload-artifact@v3
         with:
