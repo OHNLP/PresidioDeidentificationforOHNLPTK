@@ -45,66 +45,13 @@ jobs:
         with:
           name: ${{ matrix.os }}-env
           path: env-${{ matrix.os }}.tar.gz
-  build-dist:
-    name: Build Module Archive
+  create-rel:
+    name: Create Release
     needs: build-envs
     runs-on: ubuntu-latest
+    outputs:
+      release_upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
-      - uses: actions/checkout@v3
-      - name: Download windows env file
-        uses: actions/download-artifact@v3
-        with:
-          name: windows-latest-env
-      - name: Download ubuntu env file
-        uses: actions/download-artifact@v3
-        with:
-          name: ubuntu-latest-env
-      - name: Download macos env file
-        uses: actions/download-artifact@v3
-        with:
-          name: macos-latest-env
-      - name: Rename environments
-        shell: bash
-        run: |
-          mv env-windows-latest.tar.gz env-win32.tar.gz
-          mv env-ubuntu-latest.tar.gz env-linux.tar.gz
-          mv env-macos-latest.tar.gz env-darwin.tar.gz
-      - name: Zip Package Sources and Env (Online/Compact)
-        uses: montudor/action-zip@v1
-        with:
-          args: zip -qq -r PresidioDeidentificationForOHNLPTK.zip environment.yml LICENSE NOTICE presidio_deid.py README.md backbone_module.json
-      - name: Zip Package Sources and Env (Standalone)
-        uses: montudor/action-zip@v1
-        with:
-          args: zip -qq -r PresidioDeidentificationForOHNLPTK-Standalone.zip environment.yml LICENSE NOTICE presidio_deid.py README.md backbone_module.json env-win32.tar.gz env-linux.tar.gz env-darwin.tar.gz
-      - name: Unpack Environment to Execute Build Script
-        shell: bash -l {0}
-        run: |
-          mkdir build_env
-          tar -xzf env-linux.tar.gz -C build_env
-          source build_env/bin/activate
-          conda-unpack
-          python build.py
-      - name: Create Directory Structure for Release
-        shell: bash
-        run: |
-          mkdir dist
-          mkdir dist/python_modules
-          mkdir dist/python_resources
-          mkdir dist_standalone
-          mkdir dist_standalone/python_modules
-          mkdir dist_standalone/python_resources
-          mv ./obi_deid_roberta_i2b2 ./dist_standalone/python_resources/obi_deid_roberta_i2b2
-          mv ./PresidioDeidentificationForOHNLPTK.zip dist/python_modules/PresidioDeidentificationForOHNLPTK.zip
-          mv ./PresidioDeidentificationForOHNLPTK-Standalone.zip dist_standalone/python_modules/PresidioDeidentificationForOHNLPTK.zip
-      - name: Zip Package Dist for Final Release (Online/Compact)
-        uses: montudor/action-zip@v1
-        with:
-          args: zip -qq -r PresidioDeidentificationForOHNLPTK.zip ./dist
-      - name: Zip Package Dist for Final Release (Standalone)
-        uses: montudor/action-zip@v1
-        with:
-          args: zip -qq -r PresidioDeidentificationForOHNLPTK-Standalone.zip ./dist_standalone
       - name: Create a Release
         id: create_release
         uses: actions/create-release@v1
@@ -121,25 +68,104 @@ jobs:
           draft: false # optional
           # `true` to identify the release as a prerelease. `false` to identify the release as a full release. Default: `false`
           prerelease: false # optional
+  build-dist:
+    name: Build Module Archive
+    needs: create-rel
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Zip Package Sources and Env
+        uses: montudor/action-zip@v1
+        with:
+          args: zip -qq -r PresidioDeidentificationForOHNLPTK.zip .
+      - name: Create Directory Structure for Release
+        shell: bash
+        run: |
+          mkdir dist
+          mkdir dist/python_modules
+          mv ./PresidioDeidentificationForOHNLPTK.zip dist/python_modules/PresidioDeidentificationForOHNLPTK.zip
+      - name: Zip Package Dist for Final Release (Online/Compact)
+        uses: montudor/action-zip@v1
+        with:
+          args: zip -qq -r PresidioDeidentificationForOHNLPTK.zip ./dist
       - name: Upload Release Asset (Online/Compact)
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: ${{ needs.create-rel.outputs.release_upload_url }}
           asset_path: ./PresidioDeidentificationForOHNLPTK.zip
           asset_name: PresidioDeidentificationForOHNLPTK.zip
           asset_content_type: application/zip
-      - name: Upload Release Asset (Standalone)
-        id: upload-release-asset-standalone
+  build-dist-standalone:
+    name: Build Module Archive (Standalone)
+    needs: create-rel
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [
+          windows,
+          ubuntu,
+          macos
+        ]
+        include:
+          - os: windows
+            dist_name: win32
+          - os: ubuntu
+            dist_name: linux
+          - os: macos
+            dist_name: darwin
+    env:
+      OS_NAME: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Download runner/ubuntu env file
+        uses: actions/download-artifact@v3
+        with:
+          name: ubuntu-latest-env
+      - name: Download dist env file
+        if: matrix.os != 'ubuntu'
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ matrix.os }}-latest-env
+      - name: Rename dist files
+        shell: bash
+        run: |
+          mv env-${{ matrix.os }}-latest.tar.gz env-${{ matrix.dist_name }}.tar.gz
+      - name: Zip Package Sources and Env
+        uses: montudor/action-zip@v1
+        with:
+          args: zip -qq -r PresidioDeidentificationForOHNLPTK.zip .
+      - name: Unpack Environment to Execute Build Script
+        shell: bash -l {0}
+        run: |
+          mkdir build_env
+          tar -xzf env-linux.tar.gz -C build_env        
+          source build_env/bin/activate
+          conda-unpack
+          python build.py
+      - name: Create Directory Structure for Release
+        shell: bash
+        run: |
+          mkdir dist
+          mkdir dist/python_modules
+          mkdir dist/python_resources      
+          mv ./obi_deid_roberta_i2b2 ./dist/python_resources/obi_deid_roberta_i2b2
+          mv ./PresidioDeidentificationForOHNLPTK.zip dist/python_modules/PresidioDeidentificationForOHNLPTK.zip
+      - name: Zip Package Dist for Final Release (Online/Compact)
+        uses: montudor/action-zip@v1
+        with:
+          args: zip -qq -r PresidioDeidentificationForOHNLPTK.zip ./dist
+      - name: Upload Release Asset
+        id: upload-release-asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./PresidioDeidentificationForOHNLPTK-Standalone.zip
-          asset_name: PresidioDeidentificationForOHNLPTK-Standalone.zip
+          upload_url: ${{ needs.create-rel.outputs.release_upload_url }}
+          asset_path: ./PresidioDeidentificationForOHNLPTK.zip
+          asset_name: PresidioDeidentificationForOHNLPTK-Standalone-${{ matrix.dist_name }}.zip
           asset_content_type: application/zip
 
 
