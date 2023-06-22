@@ -10,7 +10,8 @@ jobs:
       matrix:
         os: [
           windows-latest,
-          ubuntu-latest
+          ubuntu-latest,
+          macos-latest
         ]
     runs-on: ${{ matrix.os }}
     steps:
@@ -33,12 +34,12 @@ jobs:
       - name: Create and Package Conda Environment (Windows)
         if: runner.os == 'Windows'
         shell: cmd /C call {0}
-        run: |
+        run: >-
           conda config --set channel_priority strict
-          conda env create -f environment.yml --name build_env
-          conda activate build_env
-          python -m spacy.download en_core_web_lg
-          conda-pack --ignore-missing-files -o env-${{ matrix.os }}.tar.gz
+          && conda env create -f environment.yml --name build_env
+          && conda activate build_env
+          && python -m spacy.download en_core_web_lg
+          && conda-pack --ignore-missing-files -o env-${{ matrix.os }}.tar.gz
       - name: Upload environment archive
         uses: actions/upload-artifact@v3
         with:
@@ -58,11 +59,16 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: ubuntu-latest-env
+      - name: Download macos env file
+        uses: actions/download-artifact@v3
+        with:
+          name: macos-latest-env
       - name: Rename environments
         shell: bash
         run: |
           mv env-windows-latest.tar.gz env-win32.tar.gz
           mv env-ubuntu-latest.tar.gz env-linux.tar.gz
+          mv env-macos-latest.tar.gz env-darwin.tar.gz
       - name: Zip Package Sources and Env (Online/Compact)
         uses: montudor/action-zip@v1
         with:
@@ -70,7 +76,7 @@ jobs:
       - name: Zip Package Sources and Env (Standalone)
         uses: montudor/action-zip@v1
         with:
-          args: zip -qq -r PresidioDeidentificationForOHNLPTK-Standalone.zip environment.yml LICENSE NOTICE presidio_deid.py README.md backbone_module.json env-win32.tar.gz env-linux.tar.gz
+          args: zip -qq -r PresidioDeidentificationForOHNLPTK-Standalone.zip environment.yml LICENSE NOTICE presidio_deid.py README.md backbone_module.json env-win32.tar.gz env-linux.tar.gz env-darwin.tar.gz
       - name: Unpack Environment to Execute Build Script
         shell: bash
         run: |
