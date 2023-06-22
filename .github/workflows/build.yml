@@ -23,7 +23,7 @@ jobs:
         run: |
           $CONDA/bin/conda config --set channel_priority strict
           $CONDA/bin/conda env update --file environment.yml --name base
-          $CONDA/python -m spacy.download en_core_web_lg
+          $CONDA/bin/python -m spacy.download en_core_web_lg
           $CONDA/bin/conda-pack --ignore-missing-files -o env-${{ matrix.os }}.tar.gz
       - name: Create and Package Conda Environment (Windows)
         if: runner.os == 'Windows'
