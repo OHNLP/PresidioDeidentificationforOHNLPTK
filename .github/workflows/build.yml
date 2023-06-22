@@ -38,7 +38,7 @@ jobs:
           conda config --set channel_priority strict
           && conda env create -f environment.yml --name build_env
           && conda activate build_env
-          && python -m spacy.download en_core_web_lg
+          && python -m spacy download en_core_web_lg
           && conda-pack --ignore-missing-files -o env-${{ matrix.os }}.tar.gz
       - name: Upload environment archive
         uses: actions/upload-artifact@v3
