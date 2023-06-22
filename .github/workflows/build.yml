@@ -78,10 +78,13 @@ jobs:
         with:
           args: zip -qq -r PresidioDeidentificationForOHNLPTK-Standalone.zip environment.yml LICENSE NOTICE presidio_deid.py README.md backbone_module.json env-win32.tar.gz env-linux.tar.gz env-darwin.tar.gz
       - name: Unpack Environment to Execute Build Script
-        shell: bash
+        shell: bash -l {0}
         run: |
+          mkdir build_env
           tar -xzf env-linux.tar.gz -C build_env
-          ./build_env/bin/python build.py
+          source build_env/bin/activate
+          conda-unpack
+          python build.py
       - name: Create Directory Structure for Release
         shell: bash
         run: |
