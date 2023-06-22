@@ -19,12 +19,13 @@ jobs:
           python-version: 3.10.11
       - name: Create and Package Conda Environment (Darwin/Linux)
         if: runner.os == 'Linux' || runner.os == 'macOS'
-        shell: bash
+        shell: bash -l {0}
         run: |
-          $CONDA/bin/conda config --set channel_priority strict
-          $CONDA/bin/conda env update --file environment.yml --name base
-          $CONDA/bin/python -m spacy.download en_core_web_lg
-          $CONDA/bin/conda-pack --ignore-missing-files -o env-${{ matrix.os }}.tar.gz
+          conda config --set channel_priority strict
+          conda env update --file environment.yml --name base
+          conda activate base
+          python -m spacy download en_core_web_lg
+          conda-pack --ignore-missing-files -o env-${{ matrix.os }}.tar.gz
       - name: Create and Package Conda Environment (Windows)
         if: runner.os == 'Windows'
         run: |
