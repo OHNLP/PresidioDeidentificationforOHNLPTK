@@ -129,10 +129,15 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: ${{ matrix.os }}-latest-env
-      - name: Rename dist files
+      - name: Rename dist env files
         shell: bash
         run: |
           mv env-${{ matrix.os }}-latest.tar.gz env-${{ matrix.dist_name }}.tar.gz
+      - name: Rename runner env file
+        if: matrix.os != 'ubuntu'
+        shell: bash
+        run: |
+          mv env-ubuntu-latest.tar.gz env-linux.tar.gz
       - name: Zip Package Sources and Env
         uses: montudor/action-zip@v1
         with:
