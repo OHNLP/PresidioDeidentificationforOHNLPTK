@@ -1,11 +1,14 @@
 {
   "name": "Clinical Note De-Identification",
-  "desc": "Performs Clinical Note De-Identification Tasks using the Microsoft Presidio SDK",
+  "desc": "Tasks Relating to Clinical Note De-Identification using the Microsoft Presidio SDK",
   "repo": "https://github.com/OHNLP/PresidioDeidentificationforOHNLPTK",
+  "lang": "PYTHON",
+  "module_identifier": "PresidioDeidentificationforOHNLPTK",
   "packages": [],
   "components": [
     {
-      "name": "Identify PII Entities In Text",
+      "name": "PII Entity Recognition",
+      "desc": "Identifies Personally Identifiable Information in Clinical Narratives using a Configurable NER model",
       "entry_point": "presidio_deid",
       "class_name": "IdentifyPIIComponentDefinition",
       "config_def": {
@@ -15,7 +18,7 @@
         },
         "id_col": {
           "name": "Column Containing Identifiers/Record Labels for the Text",
-          "type": "STRING"
+          "type": "COLUMNDEF"
         },
         "text_col": {
           "name": "Column Containing Text to De-Identify",
@@ -29,7 +32,7 @@
         "acceptance_threshold": {
           "name": "Model Confidence Threshold for Redaction",
           "type": "DOUBLE",
-          "default": "0.35"
+          "default": 0.35
         }
       }
     }
