@@ -94,7 +94,7 @@ class IdentifyPIIDoFn(BackboneComponentOneToManyDoFn):
                 {
                     "lang_code": "en",
                     "model_name": {
-                        "spacy": "en_core_web_lg",  # Installed as part of
+                        "spacy": "en_core_web_lg",  # Installed as part of pip dependency direct from github
                         "transformers": self.transformers_model
                     }
                 }
@@ -155,11 +155,3 @@ class IdentifyPIIComponentDefinition(BackboneComponentDefinition):
 
     def get_do_fn(self) -> BackboneComponentOneToManyDoFn:
         return IdentifyPIIDoFn()
-
-
-class ReplacePIIComponentDefinition(BackboneComponentDefinition):
-    def get_component_def(self) -> BackboneComponent:
-        pass
-
-    def get_do_fn(self) -> Union[BackboneComponentOneToOneDoFn, BackboneComponentOneToManyDoFn]:
-        pass
