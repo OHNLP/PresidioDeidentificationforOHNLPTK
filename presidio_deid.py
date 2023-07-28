@@ -1,10 +1,11 @@
 import json
-from typing import Union, List
+from typing import Union, List, Tuple
 
 from ohnlp.toolkit.backbone.api import BackboneComponentDefinition, BackboneComponent, Row, Schema, SchemaField, \
     FieldType, BackboneComponentOneToManyDoFn, TaggedRow, BackboneComponentOneToOneDoFn
-from presidio_analyzer import AnalyzerEngine
-from presidio_analyzer.nlp_engine import NlpEngineProvider
+from presidio_analyzer import AnalyzerEngine, RecognizerRegistry
+from presidio_analyzer.nlp_engine import NlpEngineProvider, NlpEngine
+from transformers_recognizer import TransformersRecognizer, BERT_DEID_CONFIGURATION
 from presidio_anonymizer import AnonymizerEngine
 from presidio_anonymizer.entities import RecognizerResult
 # Huggingface/Transformers and Spacy Model Support
@@ -80,29 +81,41 @@ class IdentifyPIIDoFn(BackboneComponentOneToManyDoFn):
         if config_json_str is not None:
             config = json.loads(config_json_str)
             self.note_id_col_name = resolve_from_json_config(config, 'id_col')
+            if self.note_id_col_name is not None:
+                self.note_id_col_name = self.note_id_col_name["sourceColumnName"]
             self.note_text_col_name = resolve_from_json_config(config, 'text_col')
+            if self.note_text_col_name is not None:
+                self.note_text_col_name = self.note_text_col_name["sourceColumnName"]
             self.transformers_model = resolve_from_json_config(config, 'ner_model_path')
             self.acceptance_threshold = resolve_from_json_config(config, 'acceptance_threshold')
 
     def on_bundle_start(self) -> None:
-        # Download models
+        # Download models if necessary
         AutoTokenizer.from_pretrained(self.transformers_model)
         AutoModelForTokenClassification.from_pretrained(self.transformers_model)
+        # Setup NLP Engine
         presidio_analyzer_configuration = {
-            "nlp_engine_name": "transformers",
+            "nlp_engine_name": "spacy",
             "models": [
                 {
                     "lang_code": "en",
-                    "model_name": {
-                        "spacy": "en_core_web_lg",  # Installed as part of pip dependency direct from github
-                        "transformers": self.transformers_model
-                    }
+                    "model_name": "en_core_web_sm",  # Installed as part of pip dependency direct from github
                 }
             ]
         }
+        # Inject Transformer Recognizer
+        # See: https://huggingface.co/spaces/presidio/presidio_demo/blob/main/presidio_nlp_engine_config.py
+        registry: RecognizerRegistry = RecognizerRegistry()
+        registry.load_predefined_recognizers()
+        transformers_recognizer: TransformersRecognizer = TransformersRecognizer(model_path=self.transformers_model)
+        transformers_recognizer.load_transformer(**BERT_DEID_CONFIGURATION)
         provider: NlpEngineProvider = NlpEngineProvider(nlp_configuration=presidio_analyzer_configuration)
+        registry.add_recognizer(transformers_recognizer)
+        registry.remove_recognizer("SpacyRecognizer")
+
         self.analyzer = AnalyzerEngine(
             nlp_engine=provider.create_engine(),
+            registry=registry,
             default_score_threshold=self.acceptance_threshold)
         self.anonymizer = AnonymizerEngine()
 
@@ -145,7 +158,7 @@ class IdentifyPIIDoFn(BackboneComponentOneToManyDoFn):
         )
         anonymized_text = anonymizer_output.text
         row.set_value(self.note_text_col_name, anonymized_text)
-        ret.append(TaggedRow("De-Identified Text", row))
+        ret.append(TaggedRow("Text w/ PII Redacted", row))
         return ret
 
 
