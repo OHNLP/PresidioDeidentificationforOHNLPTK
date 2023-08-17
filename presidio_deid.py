@@ -1,15 +1,17 @@
 import json
-from typing import Union, List, Tuple
+import re
+from typing import Union, List, Callable
 
 from ohnlp.toolkit.backbone.api import BackboneComponentDefinition, BackboneComponent, Row, Schema, SchemaField, \
     FieldType, BackboneComponentOneToManyDoFn, TaggedRow, BackboneComponentOneToOneDoFn
 from presidio_analyzer import AnalyzerEngine, RecognizerRegistry
-from presidio_analyzer.nlp_engine import NlpEngineProvider, NlpEngine
-from transformers_recognizer import TransformersRecognizer, BERT_DEID_CONFIGURATION
+from presidio_analyzer.nlp_engine import NlpEngineProvider
 from presidio_anonymizer import AnonymizerEngine
 from presidio_anonymizer.entities import RecognizerResult
 # Huggingface/Transformers and Spacy Model Support
 from transformers import AutoTokenizer, AutoModelForTokenClassification
+
+from transformers_recognizer import TransformersRecognizer, BERT_DEID_CONFIGURATION
 
 
 def resolve_from_json_config(config, field: str):
@@ -168,3 +170,66 @@ class IdentifyPIIComponentDefinition(BackboneComponentDefinition):
 
     def get_do_fn(self) -> BackboneComponentOneToManyDoFn:
         return IdentifyPIIDoFn()
+
+
+recognized_presidio_types: List[str] = ["LOCATION", "PERSON", "ORGANIZATION", "AGE", "PHONE_NUMBER", "EMAIL",
+                                        "DATE_TIME", "ZIP", "PROFESSION", "USERNAME", "ID"]
+
+
+class SynthesizePIIReplacementComponent(BackboneComponent):
+
+    def init(self, configstr: Union[str, None]) -> None:
+        pass
+
+    def to_do_fn_config(self) -> str:
+        pass
+
+    def get_input_tag(self) -> str:
+        pass
+
+    def get_output_tags(self) -> List[str]:
+        pass
+
+    def calculate_output_schema(self, input_schema: dict[str, Schema]) -> dict[str, Schema]:
+        pass
+
+
+class SynthesizePIIReplacementDoFn(BackboneComponentOneToOneDoFn):
+
+    def __init__(self):
+        super().__init__()
+        self.replacement_values: dict[str, Callable] = {}
+        self.note_text_col_name = None
+        self.regex: Union[None, re.Pattern] = None
+
+    def init_from_driver(self, config_json_str: Union[str, None]) -> None:
+        self.regex = re.compile('<(' + '|'.join(self.replacement_values.keys()).upper() + ')>')
+        pass
+
+    def on_bundle_start(self) -> None:
+        pass
+
+    def on_bundle_end(self) -> None:
+        pass
+
+    def apply(self, input_row: Row) -> List[Row]:
+        text: str = str(input_row.get_value(self.note_text_col_name))
+        synthetic_text = ''
+        curr_start_pos = 0
+        for m in self.regex.finditer(text):
+            end_pos, new_start_pos = m.span()
+            synthetic_text += text[curr_start_pos:end_pos]
+            tag = m.group(1).upper()
+            synthetic_value = ''  # TODO
+            synthetic_text += synthetic_value
+            curr_start_pos = new_start_pos
+        synthetic_text += text[curr_start_pos:]
+        return [input_row.set_value(self.note_text_col_name, synthetic_text)]
+
+
+class SynthesizePIIReplacementComponentDefinition(BackboneComponentDefinition):
+    def get_component_def(self) -> BackboneComponent:
+        return SynthesizePIIReplacementComponent()
+
+    def get_do_fn(self) -> Union[BackboneComponentOneToOneDoFn, BackboneComponentOneToManyDoFn]:
+        return SynthesizePIIReplacementDoFn()

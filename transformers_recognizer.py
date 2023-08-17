@@ -1,5 +1,6 @@
 # Copied from https://huggingface.co/spaces/presidio/presidio_demo/raw/main/transformers_rec/transformers_recognizer.py
-# which is itself Modified from https://github.com/microsoft/presidio/blob/main/docs/samples/python/transformers_recognizer/transformer_recognizer.py
+# which is itself Modified from
+# https://github.com/microsoft/presidio/blob/main/docs/samples/python/transformers_recognizer/transformer_recognizer.py
 
 import copy
 import logging
