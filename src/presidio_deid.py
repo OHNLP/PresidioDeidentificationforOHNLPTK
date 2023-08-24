@@ -321,7 +321,8 @@ class SynthesizePIIReplacementDoFn(BackboneComponentOneToOneDoFn):
             synthetic_text += synthetic_value
             curr_start_pos = new_start_pos
         synthetic_text += text[curr_start_pos:]
-        return [input_row.set_value(self.note_text_col_name, synthetic_text)]
+        input_row.set_value(self.note_text_col_name, synthetic_text)
+        return [input_row]
 
 
 class SynthesizePIIReplacementComponentDefinition(BackboneComponentDefinition):
