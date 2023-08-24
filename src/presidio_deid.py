@@ -191,7 +191,7 @@ class RandomSelectionSynthesizer(Synthesizer):
         self.selections: list[str] = []
         with open(file, 'r') as f:
             for line in f:
-                self.selections.append(line)
+                self.selections.append(line.replace('\n', ''))
 
     def generate(self) -> str:
         if len(self.selections) > 0:
