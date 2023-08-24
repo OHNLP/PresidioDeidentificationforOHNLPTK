@@ -27,7 +27,7 @@ jobs:
         shell: bash -l {0}
         run: |
           conda config --set channel_priority strict
-          conda env create -f environment.yml --name build_env
+          conda env create -f src/environment.yml --name build_env
           conda activate build_env
           conda-pack --ignore-missing-files -o env-${{ matrix.os }}.tar.gz
       - name: Create and Package Conda Environment (Windows)
@@ -35,7 +35,7 @@ jobs:
         shell: cmd /C call {0}
         run: >-
           conda config --set channel_priority strict
-          && conda env create -f environment.yml --name build_env
+          && conda env create -f src/environment.yml --name build_env
           && conda activate build_env
           && conda-pack --ignore-missing-files -o env-${{ matrix.os }}.tar.gz
       - name: Upload environment archive
