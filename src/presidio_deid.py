@@ -261,11 +261,10 @@ class SynthesizePIIReplacementComponent(BackboneComponent):
         return ["Synthesized Text"]
 
     def calculate_output_schema(self, input_schema: dict[str, Schema]) -> dict[str, Schema]:
-        synthesized_text_schema: Union[Schema, None] = None
         for key in input_schema:
             schema = input_schema[key]
         return {
-            'Synthesized Text': synthesized_text_schema
+            'Synthesized Text': schema
         }
 
 
