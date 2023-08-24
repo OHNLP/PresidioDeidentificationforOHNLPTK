@@ -165,10 +165,9 @@ jobs:
         shell: bash
         run: |
           mkdir dist
-          mkdir dist/python_modules
-          mkdir dist/python_resources      
-          mv ./python_envs dist/python_envs
+          mkdir dist/python_modules   
           mv ./resources dist/python_resources
+          mv ./python_envs dist/python_envs
           mv ./obi_deid_roberta_i2b2 ./dist/python_resources/obi_deid_roberta_i2b2
           mv ./PresidioDeidentificationForOHNLPTK.zip dist/python_modules/PresidioDeidentificationForOHNLPTK.zip
       - name: Zip Package Dist for Final Release (Online/Compact)
