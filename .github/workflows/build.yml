@@ -72,10 +72,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Zip Package Sources and Env
+      - name: Install Zip
         uses: montudor/action-zip@v1
-        with:
-          args: zip -qq -r PresidioDeidentificationForOHNLPTK.zip src LICENSE NOTICE
+      - name: Zip Package Sources and Env
+        run: |
+          cd src
+          mv ../LICENSE .
+          mv ../NOTICE .
+          zip -qq -r ../PresidioDeidentificationForOHNLPTK.zip .
+          cd ..
       - name: Create Directory Structure for Release
         shell: bash
         run: |
@@ -84,9 +89,10 @@ jobs:
           mv ./PresidioDeidentificationForOHNLPTK.zip dist/python_modules/PresidioDeidentificationForOHNLPTK.zip
           mv ./resources dist/python_resources
       - name: Zip Package Dist for Final Release (Online/Compact)
-        uses: montudor/action-zip@v1
-        with:
-          args: zip -qq -r PresidioDeidentificationForOHNLPTK.zip dist
+        run: |
+          cd dist
+          zip -qq -r PresidioDeidentificationForOHNLPTK.zip .
+          cd ..
       - name: Upload Release Asset (Online/Compact)
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
@@ -119,6 +125,8 @@ jobs:
       OS_NAME: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
+      - name: Install Zip
+        uses: montudor/action-zip@v1
       - name: Download runner/ubuntu env file
         uses: actions/download-artifact@v3
         with:
@@ -138,11 +146,13 @@ jobs:
         if: matrix.os != 'ubuntu'
         shell: bash
         run: |
+          mkdir python_envs/linux
           mv env-ubuntu-latest.tar.gz python_envs/linux/PresidioDeidentificationforOHNLPTK.tar.gz
       - name: Zip Package Sources and Env
-        uses: montudor/action-zip@v1
-        with:
-          args: zip -qq -r PresidioDeidentificationForOHNLPTK.zip ./src LICENSE NOTICE
+        run: |
+          cd src
+          zip -qq -r PresidioDeidentificationForOHNLPTK.zip . 
+          cd ..
       - name: Unpack Environment to Execute Build Script
         shell: bash -l {0}
         run: |
@@ -162,9 +172,10 @@ jobs:
           mv ./obi_deid_roberta_i2b2 ./dist/python_resources/obi_deid_roberta_i2b2
           mv ./PresidioDeidentificationForOHNLPTK.zip dist/python_modules/PresidioDeidentificationForOHNLPTK.zip
       - name: Zip Package Dist for Final Release (Online/Compact)
-        uses: montudor/action-zip@v1
-        with:
-          args: zip -qq -r PresidioDeidentificationForOHNLPTK.zip dist
+        run: |
+          cd dist
+          zip -qq -r ../PresidioDeidentificationForOHNLPTK.zip .
+          cd ..
       - name: Upload Release Asset
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
