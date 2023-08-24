@@ -91,7 +91,7 @@ jobs:
       - name: Zip Package Dist for Final Release (Online/Compact)
         run: |
           cd dist
-          zip -qq -r PresidioDeidentificationForOHNLPTK.zip .
+          zip -qq -r ../PresidioDeidentificationForOHNLPTK.zip .
           cd ..
       - name: Upload Release Asset (Online/Compact)
         id: upload-release-asset
@@ -151,7 +151,7 @@ jobs:
       - name: Zip Package Sources and Env
         run: |
           cd src
-          zip -qq -r PresidioDeidentificationForOHNLPTK.zip . 
+          zip -qq -r ../PresidioDeidentificationForOHNLPTK.zip . 
           cd ..
       - name: Unpack Environment to Execute Build Script
         shell: bash -l {0}
