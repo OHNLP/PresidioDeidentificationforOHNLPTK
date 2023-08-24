@@ -75,7 +75,7 @@ jobs:
       - name: Zip Package Sources and Env
         uses: montudor/action-zip@v1
         with:
-          args: zip -qq -r PresidioDeidentificationForOHNLPTK.zip ./src LICENSE NOTICE
+          args: zip -qq -r PresidioDeidentificationForOHNLPTK.zip src LICENSE NOTICE
       - name: Create Directory Structure for Release
         shell: bash
         run: |
@@ -86,7 +86,7 @@ jobs:
       - name: Zip Package Dist for Final Release (Online/Compact)
         uses: montudor/action-zip@v1
         with:
-          args: zip -qq -r PresidioDeidentificationForOHNLPTK.zip ./dist
+          args: zip -qq -r PresidioDeidentificationForOHNLPTK.zip dist
       - name: Upload Release Asset (Online/Compact)
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
@@ -147,7 +147,7 @@ jobs:
         shell: bash -l {0}
         run: |
           mkdir build_env
-          tar -xzf env-linux.tar.gz -C build_env        
+          tar -xzf python_envs/linux/PresidioDeidentificationforOHNLPTK.tar.gz -C build_env        
           source build_env/bin/activate
           conda-unpack
           python src/build.py
@@ -164,7 +164,7 @@ jobs:
       - name: Zip Package Dist for Final Release (Online/Compact)
         uses: montudor/action-zip@v1
         with:
-          args: zip -qq -r PresidioDeidentificationForOHNLPTK.zip ./dist
+          args: zip -qq -r PresidioDeidentificationForOHNLPTK.zip dist
       - name: Upload Release Asset
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
