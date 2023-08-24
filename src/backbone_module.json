@@ -40,7 +40,7 @@
       "name": "Synthetic Identifier Generation Component",
       "desc": "Generates Synthetic Replacements for Identified PII",
       "entry_point": "presidio_deid",
-      "class_name": "IdentifyPIIComponentDefinition",
+      "class_name": "SynthesizePIIReplacementComponentDefinition",
       "config_def": {
         "text_col": {
           "name": "Column Containing Text to De-Identify",
