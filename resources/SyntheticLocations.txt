@@ -1,0 +1,27 @@
+Houston
+Dallas
+Rochester
+Los Angeles
+Minneapolis
+Portland
+Chicago
+Orlando
+Miami
+San Francisco
+Seattle
+Madison
+Eau Claire
+Boston
+New York
+Charleston
+Atlanta
+Philadelphia
+Washington DC
+Baltimore
+New Haven
+Cleveland
+Cincinnati
+St. Louis
+Nashville
+San Diego
+Phoenix
