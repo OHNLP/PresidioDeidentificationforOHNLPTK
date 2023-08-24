@@ -35,6 +35,23 @@
           "default": 0.35
         }
       }
+    },
+    {
+      "name": "Synthetic Identifier Generation Component",
+      "desc": "Generates Synthetic Replacements for Identified PII",
+      "entry_point": "presidio_deid",
+      "class_name": "IdentifyPIIComponentDefinition",
+      "config_def": {
+        "text_col": {
+          "name": "Column Containing Text to De-Identify",
+          "type": "COLUMNDEF"
+        },
+        "synthesizer_config_file": {
+          "name": "File name relative to the python_resources folder containing synthesizer configurations",
+          "type": "STRING",
+          "default": "synthesizer_config.json"
+        }
+      }
     }
   ],
   "version": "1.0.0"

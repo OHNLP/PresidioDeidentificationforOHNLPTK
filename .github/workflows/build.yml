@@ -29,7 +29,6 @@ jobs:
           conda config --set channel_priority strict
           conda env create -f environment.yml --name build_env
           conda activate build_env
-          python -m spacy download en_core_web_lg
           conda-pack --ignore-missing-files -o env-${{ matrix.os }}.tar.gz
       - name: Create and Package Conda Environment (Windows)
         if: runner.os == 'Windows'
@@ -38,7 +37,6 @@ jobs:
           conda config --set channel_priority strict
           && conda env create -f environment.yml --name build_env
           && conda activate build_env
-          && python -m spacy download en_core_web_lg
           && conda-pack --ignore-missing-files -o env-${{ matrix.os }}.tar.gz
       - name: Upload environment archive
         uses: actions/upload-artifact@v3
@@ -77,13 +75,14 @@ jobs:
       - name: Zip Package Sources and Env
         uses: montudor/action-zip@v1
         with:
-          args: zip -qq -r PresidioDeidentificationForOHNLPTK.zip .
+          args: zip -qq -r PresidioDeidentificationForOHNLPTK.zip ./src LICENSE NOTICE
       - name: Create Directory Structure for Release
         shell: bash
         run: |
           mkdir dist
           mkdir dist/python_modules
           mv ./PresidioDeidentificationForOHNLPTK.zip dist/python_modules/PresidioDeidentificationForOHNLPTK.zip
+          mv ./resources dist/python_resources
       - name: Zip Package Dist for Final Release (Online/Compact)
         uses: montudor/action-zip@v1
         with:
@@ -132,7 +131,9 @@ jobs:
       - name: Rename dist env files
         shell: bash
         run: |
-          mv env-${{ matrix.os }}-latest.tar.gz env-${{ matrix.dist_name }}.tar.gz
+          mkdir python_envs
+          mkdir python_envs/${{ matrix.dist_name }}
+          mv env-${{ matrix.os }}-latest.tar.gz python_envs/${{ matrix.dist_name }}/PresidioDeidentificationforOHNLPTK.tar.gz
       - name: Rename runner env file
         if: matrix.os != 'ubuntu'
         shell: bash
@@ -141,7 +142,7 @@ jobs:
       - name: Zip Package Sources and Env
         uses: montudor/action-zip@v1
         with:
-          args: zip -qq -r PresidioDeidentificationForOHNLPTK.zip .
+          args: zip -qq -r PresidioDeidentificationForOHNLPTK.zip ./src LICENSE NOTICE
       - name: Unpack Environment to Execute Build Script
         shell: bash -l {0}
         run: |
@@ -149,13 +150,15 @@ jobs:
           tar -xzf env-linux.tar.gz -C build_env        
           source build_env/bin/activate
           conda-unpack
-          python build.py
+          python src/build.py
       - name: Create Directory Structure for Release
         shell: bash
         run: |
           mkdir dist
           mkdir dist/python_modules
           mkdir dist/python_resources      
+          mv ./python_envs dist/python_envs
+          mv ./resources dist/python_resources
           mv ./obi_deid_roberta_i2b2 ./dist/python_resources/obi_deid_roberta_i2b2
           mv ./PresidioDeidentificationForOHNLPTK.zip dist/python_modules/PresidioDeidentificationForOHNLPTK.zip
       - name: Zip Package Dist for Final Release (Online/Compact)
@@ -172,8 +175,4 @@ jobs:
           asset_path: ./PresidioDeidentificationForOHNLPTK.zip
           asset_name: PresidioDeidentificationForOHNLPTK-Standalone-${{ matrix.dist_name }}.zip
           asset_content_type: application/zip
-
-
-
-
 

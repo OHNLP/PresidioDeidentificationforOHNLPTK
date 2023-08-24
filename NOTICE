@@ -1,7 +1,7 @@
-This module bundles spacy's en_core_web_lg and obi/deid_roberta_i2b2 as default reasonable implementations,
+This module bundles spacy's en_core_web_sm and obi/deid_roberta_i2b2 as default reasonable implementations,
 license information for which is reproduced below
 =====
-en_core_web_lg:
+en_core_web_sm:
 Copyright 2021 ExplosionAI GmbH
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of

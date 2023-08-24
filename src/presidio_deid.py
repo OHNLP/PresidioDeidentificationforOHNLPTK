@@ -1,5 +1,9 @@
+import abc
 import json
+import random
 import re
+import time
+from datetime import datetime
 from typing import Union, List, Callable
 
 from ohnlp.toolkit.backbone.api import BackboneComponentDefinition, BackboneComponent, Row, Schema, SchemaField, \
@@ -176,41 +180,133 @@ recognized_presidio_types: List[str] = ["LOCATION", "PERSON", "ORGANIZATION", "A
                                         "DATE_TIME", "ZIP", "PROFESSION", "USERNAME", "ID"]
 
 
+class Synthesizer(abc.ABC):
+    @abc.abstractmethod
+    def generate(self) -> str:
+        pass
+
+
+class RandomSelectionSynthesizer(Synthesizer):
+    def __init__(self, file: str):
+        self.selections: list[str] = []
+        with open(file, 'r') as f:
+            for line in f:
+                self.selections.append(line)
+
+    def generate(self) -> str:
+        if len(self.selections) > 0:
+            return self.selections[random.randrange(0, len(self.selections))]
+        else:
+            return ""
+
+
+class NumberFormatSynthesizer(Synthesizer):
+    def __init__(self, num_format: str):
+        self.base_format = ''
+        self.format_decimal_lengths = []
+        self.format_include_zero = []
+
+        # Scan for number format/counts
+        digit_count_scan = re.compile("\\{(\\d+)}")
+        curr_start_pos = 0
+        for m in digit_count_scan.finditer(num_format):
+            count = m.group(1)
+            self.format_include_zero.append(count.startswith('0'))
+            self.format_decimal_lengths.append(int(count))
+            end_pos, new_start_pos = m.span()
+            self.base_format += num_format[curr_start_pos:end_pos]
+            self.base_format += '{}'
+            curr_start_pos = new_start_pos
+        self.base_format = num_format[curr_start_pos:]
+
+    def generate(self) -> str:
+        # Generate integer list corresponding to the number of {} args in base_format
+        num_format_args: list[str] = []
+        for i in range(0, len(self.format_decimal_lengths)):
+            num_digits = self.format_decimal_lengths[i]
+            digits = []
+            for j in range(0, num_digits):
+                digits.append(random.randrange(0 if j != 0 or self.format_include_zero[j] else 1, 10))
+            num_format_args.append(''.join([str(x) for x in digits]))
+        return self.base_format.format(*num_format_args)
+
+
+class DateFormatSynthesizer(Synthesizer):
+    def __init__(self, date_format: str):
+        self.date_format = date_format
+        self.min_date = time.time() - 315_600_000  # 10 Years
+
+    def generate(self) -> str:
+        date_seconds = random.randrange(round(self.min_date), round(time.time()))
+        return datetime.fromtimestamp(date_seconds).strftime(self.date_format)
+
+
 class SynthesizePIIReplacementComponent(BackboneComponent):
 
+    def __init__(self):
+        super().__init__()
+        self.configstr = None
+
     def init(self, configstr: Union[str, None]) -> None:
-        pass
+        if configstr is not None:
+            self.configstr = configstr
 
     def to_do_fn_config(self) -> str:
-        pass
+        return self.configstr
 
     def get_input_tag(self) -> str:
-        pass
+        return "Tagged De-Identified Text"
 
     def get_output_tags(self) -> List[str]:
-        pass
+        return ["Synthesized Text"]
 
     def calculate_output_schema(self, input_schema: dict[str, Schema]) -> dict[str, Schema]:
-        pass
+        synthesized_text_schema: Union[Schema, None] = None
+        for key in input_schema:
+            schema = input_schema[key]
+        return {
+            'Synthesized Text': synthesized_text_schema
+        }
 
 
 class SynthesizePIIReplacementDoFn(BackboneComponentOneToOneDoFn):
 
     def __init__(self):
         super().__init__()
-        self.replacement_values: dict[str, Callable] = {}
+        self.synthesizer_config_file = None
+        self.synthesizers: dict[str, Synthesizer] = {}
         self.note_text_col_name = None
         self.regex: Union[None, re.Pattern] = None
 
     def init_from_driver(self, config_json_str: Union[str, None]) -> None:
-        self.regex = re.compile('<(' + '|'.join(self.replacement_values.keys()).upper() + ')>')
-        pass
+        config = json.loads(config_json_str)
+        self.note_text_col_name = resolve_from_json_config(config, 'text_col')
+        if self.note_text_col_name is not None:
+            self.note_text_col_name = self.note_text_col_name["sourceColumnName"]
+        self.synthesizer_config_file = resolve_from_json_config(config, 'synthesizer_config_file')
 
     def on_bundle_start(self) -> None:
-        pass
+        with open(self.synthesizer_config_file, 'r') as f:
+            synthesizer_config_map = json.load(f)
+        # Initialize synthesizers
+        for presidio_type in recognized_presidio_types:
+            if presidio_type in synthesizer_config_map:
+                synthesizer_type = synthesizer_config_map[presidio_type]['type']
+                synthesizer_config = synthesizer_config_map[presidio_type]['config']
+                synthesizer: Union[Synthesizer, None] = None
+                if synthesizer_type == 'TEXT':
+                    synthesizer = RandomSelectionSynthesizer(synthesizer_config)
+                elif synthesizer_type == 'NUMBER':
+                    synthesizer = NumberFormatSynthesizer(synthesizer_config)
+                elif synthesizer_type == 'DATETIME':
+                    synthesizer = DateFormatSynthesizer(synthesizer_config)
+                if synthesizer is not None:
+                    self.synthesizers[presidio_type] = synthesizer
+        self.regex = re.compile('<(' + '|'.join(self.synthesizers.keys()).upper() + ')>')
 
     def on_bundle_end(self) -> None:
-        pass
+        self.synthesizers.clear()
+        return
 
     def apply(self, input_row: Row) -> List[Row]:
         text: str = str(input_row.get_value(self.note_text_col_name))
@@ -220,7 +316,9 @@ class SynthesizePIIReplacementDoFn(BackboneComponentOneToOneDoFn):
             end_pos, new_start_pos = m.span()
             synthetic_text += text[curr_start_pos:end_pos]
             tag = m.group(1).upper()
-            synthetic_value = ''  # TODO
+            synthetic_value = '<' + tag + '>'  # Default operation is to not replace anything and leave it tagged
+            if tag in self.synthesizers:
+                synthetic_value = self.synthesizers[tag].generate()
             synthetic_text += synthetic_value
             curr_start_pos = new_start_pos
         synthetic_text += text[curr_start_pos:]

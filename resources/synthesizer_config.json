@@ -1,0 +1,46 @@
+{
+  "LOCATION": {
+    "type": "TEXT",
+    "config": "SyntheticLocations.txt"
+  },
+  "PERSON": {
+    "type": "TEXT",
+    "config": "SyntheticNames.txt"
+  },
+  "ORGANIZATION": {
+    "type": "TEXT",
+    "config": "SyntheticOrgs.txt"
+  },
+  "AGE": {
+    "type": "NUMBER",
+    "config": "{2}"
+  },
+  "PHONE_NUMBER": {
+    "type": "NUMBER",
+    "config": "({3}) {3}-{4}"
+  },
+  "EMAIL": {
+    "type": "TEXT",
+    "config": "SyntheticEmails.txt"
+  },
+  "DATE_TIME": {
+    "type": "DATETIME",
+    "config": "%Y-%m-%d"
+  },
+  "ZIP": {
+    "type": "NUMBER",
+    "config": "{5}"
+  },
+  "PROFESSION": {
+    "type": "TEXT",
+    "config": "SyntheticProfessions.txt"
+  },
+  "USERNAME": {
+    "type": "TEXT",
+    "config": "SyntheticUsernames.txt"
+  },
+  "ID":  {
+    "type": "NUMBER",
+    "config": "{3}-{2}-{4}"
+  }
+}
