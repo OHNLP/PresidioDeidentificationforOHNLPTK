@@ -1,11 +1,16 @@
 name: PresidioDeidentificationForOHNLPTK
 channels:
   - defaults
+  - pytorch
 dependencies:
   - python=3.10.11
   - pip=23.1.2
-  - transformers
+  - transformers=4.32.1
   - conda-pack
+  - pytorch=2.0.1
+  - torchvision=0.15.2
+  - torchaudio=2.0.2
+  - cpuonly=2.0
   - pip:
       - ohnlptk-xlang-python==1.1.0
       - presidio-analyzer==2.2.33
