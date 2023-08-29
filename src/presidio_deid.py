@@ -217,7 +217,7 @@ class NumberFormatSynthesizer(Synthesizer):
             self.base_format += num_format[curr_start_pos:end_pos]
             self.base_format += '{}'
             curr_start_pos = new_start_pos
-        self.base_format = num_format[curr_start_pos:]
+        self.base_format += num_format[curr_start_pos:]
 
     def generate(self) -> str:
         # Generate integer list corresponding to the number of {} args in base_format
